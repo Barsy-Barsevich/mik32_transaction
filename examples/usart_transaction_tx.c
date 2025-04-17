@@ -49,7 +49,8 @@ int main()
     usart_transaction_cfg_t cfg = {
         .host = UART_0,
         .dma_channel = 0,
-        .dma_priority = 3
+        .dma_priority = 3,
+        .direction = USART_TRANSACTION_TRANSMIT
     };
     usart_transaction_init(&trans, &cfg);
 
