@@ -7,11 +7,19 @@
 
 #include "dma_transaction.h"
 
+
+typedef enum
+{
+    USART_TRANSACTION_TRANSMIT = 0,
+    USART_TRANSACTION_RECEIVE = 1
+} usart_transaction_direction_t;
+
 typedef struct
 {
     UART_TypeDef *host;
     uint8_t dma_channel;
     uint8_t dma_priority;
+    usart_transaction_direction_t direction;
     uint32_t src;
     uint32_t dst;
 } usart_transaction_cfg_t;
@@ -20,6 +28,7 @@ typedef struct
 {
     UART_TypeDef *host;
     HAL_DMA_Transaction_t dma_transaction;
+    usart_transaction_direction_t direction;
 } usart_transaction_t;
 
 inline bool usart_transaction_ready(usart_transaction_t *trans)
