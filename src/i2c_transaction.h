@@ -43,9 +43,12 @@ typedef struct
     i2c_transaction_err_t status_i2c_error;
 } i2c_transaction_t;
 
-HAL_Status_t i2c_transaction_end(i2c_transaction_t *trans, uint32_t timeout_us);
 
 HAL_Status_t i2c_transaction_init(i2c_transaction_t *trans, i2c_transaction_cfg_t *cfg);
 HAL_Status_t i2c_transmit_start(i2c_transaction_t *trans, const char *src, uint8_t len);
+HAL_Status_t i2c_transaction_end(i2c_transaction_t *trans, uint32_t timeout_us);
+HAL_Status_t i2c_transmit(i2c_transaction_t *trans, const char *src, uint8_t len, uint32_t timeout_us);
+HAL_Status_t i2c_receive_start(i2c_transaction_t *trans, char *dst, uint8_t len);
+HAL_Status_t i2c_receive(i2c_transaction_t *trans, char *dst, uint8_t len, uint32_t timeout_us);
 
 void i2c_transaction_err_decode(i2c_transaction_t *trans);
