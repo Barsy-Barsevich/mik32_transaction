@@ -1,12 +1,6 @@
 #include "i2c_transaction.h"
 
 
-void i2c_transaction_set_len(i2c_transaction_t *trans, uint16_t len)
-{
-    trans->host->CR2 &= ~I2C_CR2_NBYTES_M;
-    trans->host->CR2 |= I2C_CR2_NBYTES(len);
-}
-
 HAL_Status_t i2c_transaction_init(i2c_transaction_t *trans, i2c_transaction_cfg_t *cfg)
 {
     HAL_Status_t res;
@@ -15,8 +9,20 @@ HAL_Status_t i2c_transaction_init(i2c_transaction_t *trans, i2c_transaction_cfg_
     trans->address = cfg->address;
     trans->use_10bit_address = cfg->use_10bit_address;
 
+    /* autoend enable */
+    trans->host->CR2 |= I2C_CR2_AUTOEND_M;
     /* Разрешение поддержки DMA при передаче */
-    trans->host->CR1 |= I2C_CR1_TXDMAEN_M;
+    trans->host->CR1 |= (I2C_CR1_TXDMAEN_M | I2C_CR1_RXDMAEN_M);
+    /* Writing address */
+    if (!trans->use_10bit_address) /* 7 битный адрес */
+        trans->host->CR2 &= ~I2C_CR2_ADD10_M;
+    else /* 10 битный адрес */
+    {
+        trans->host->CR2 |= I2C_CR2_ADD10_M;
+        /* ведущий отправляет полную последовательность для чтения для 10 битного адреса */
+        trans->host->CR2 &= ~I2C_CR2_HEAD10R_M;
+    }
+
 
     HAL_DMA_Config_t dma_cfg = {0};
     dma_cfg.priority = cfg->dma_priority;
@@ -66,6 +72,7 @@ HAL_Status_t i2c_transaction_init(i2c_transaction_t *trans, i2c_transaction_cfg_
     return HAL_DMA_OK;
 }
 
+
 HAL_Status_t RAM_ATTR i2c_transmit_start(i2c_transaction_t *trans, const char *src, uint8_t len)
 {
     if (trans->direction != I2C_TRANSACTION_TRANSMIT)
@@ -76,29 +83,18 @@ HAL_Status_t RAM_ATTR i2c_transmit_start(i2c_transaction_t *trans, const char *s
     /* write num of bytes */
     trans->host->CR2 &= ~I2C_CR2_NBYTES_M;
     trans->host->CR2 |= I2C_CR2_NBYTES(len);
-    /* autoend enable */
-    trans->host->CR2 &= ~I2C_CR2_AUTOEND_M;
-    trans->host->CR2 |= (1 << I2C_CR2_AUTOEND_S);
+    // /* autoend enable */
+    // trans->host->CR2 &= ~I2C_CR2_AUTOEND_M;
+    // trans->host->CR2 |= (1 << I2C_CR2_AUTOEND_S);
 
     /* Writing address */
     trans->host->CR2 &= ~I2C_CR2_SADD_M;
-    if (!trans->use_10bit_address) /* 7 битный адрес */
-    {
-        trans->host->CR2 &= ~I2C_CR2_ADD10_M;
-        trans->host->CR2 |= ((trans->address & 0x7F) << 1) << I2C_CR2_SADD_S;
-    }
-    else /* 10 битный адрес */
-    {
-        trans->host->CR2 |= I2C_CR2_ADD10_M;
-        /* ведущий отправляет полную последовательность для чтения для 10 битного адреса */
-        trans->host->CR2 &= ~I2C_CR2_HEAD10R_M;
-        trans->host->CR2 |= (trans->address & 0x3FF) << I2C_CR2_SADD_S;
-    }
+    uint8_t addr = trans->address;
+    if (!trans->use_10bit_address) addr <<= 1;
+    trans->host->CR2 |= (addr << I2C_CR2_SADD_S);
 
     /* Задать направление передачи - запись */
     trans->host->CR2 &= ~I2C_CR2_RD_WRN_M;
-    /* Разрешение поддержки DMA при передаче */
-    trans->host->CR1 |= I2C_CR1_TXDMAEN_M;
     /* Настройка и включение канала DMA */
     trans->dma_transaction.config.SRC = (uint32_t)src;
     trans->dma_transaction.config.LEN = len;
@@ -111,7 +107,7 @@ HAL_Status_t RAM_ATTR i2c_transmit_start(i2c_transaction_t *trans, const char *s
 }
 
 
-HAL_Status_t i2c_transaction_end(i2c_transaction_t *trans, uint32_t timeout_us)
+HAL_Status_t RAM_ATTR i2c_transaction_end(i2c_transaction_t *trans, uint32_t timeout_us)
 {
     HAL_Status_t res = dma_transaction_wait(&(trans->dma_transaction), timeout_us);
     trans->dma_transaction.config.CFG &= ~DMA_CH_CFG_ENABLE_M;
@@ -131,7 +127,65 @@ HAL_Status_t i2c_transaction_end(i2c_transaction_t *trans, uint32_t timeout_us)
 }
 
 
-void i2c_transaction_err_decode(i2c_transaction_t *trans)
+HAL_Status_t RAM_ATTR i2c_transmit(i2c_transaction_t *trans, const char *src, uint8_t len, uint32_t timeout_us)
+{
+    HAL_Status_t res;
+    res = i2c_transmit_start(trans, src, len);
+    if (res == HAL_DMA_OK)
+    {
+        res = i2c_transaction_end(trans, timeout_us);
+    }
+    return res;
+}
+
+
+HAL_Status_t RAM_ATTR i2c_receive_start(i2c_transaction_t *trans, char *dst, uint8_t len)
+{
+    if (trans->direction != I2C_TRANSACTION_RECEIVE)
+    return HAL_DMA_INCORRECT_ARGUMENT;
+    /* Enable DMA channel */
+    trans->dma_transaction.config.CFG |= DMA_CH_CFG_ENABLE_M;
+
+    /* write num of bytes */
+    trans->host->CR2 &= ~I2C_CR2_NBYTES_M;
+    trans->host->CR2 |= I2C_CR2_NBYTES(len);
+    // /* autoend enable */
+    // trans->host->CR2 &= ~I2C_CR2_AUTOEND_M;
+    // trans->host->CR2 |= (1 << I2C_CR2_AUTOEND_S);
+
+    /* Writing address */
+    trans->host->CR2 &= ~I2C_CR2_SADD_M;
+    uint8_t addr = trans->address;
+    if (!trans->use_10bit_address) addr <<= 1;
+    trans->host->CR2 |= (addr << I2C_CR2_SADD_S);
+
+    /* Задать направление передачи - чтение */
+    trans->host->CR2 |= I2C_CR2_RD_WRN_M;
+
+    /* Настройка и включение канала DMA */
+    trans->dma_transaction.config.DST = (uint32_t)dst;
+    trans->dma_transaction.config.LEN = len;
+    dma_transaction_start(&(trans->dma_transaction));
+
+    /* Старт */
+    trans->host->CR2 |= I2C_CR2_START_M;
+    return HAL_DMA_OK;
+}
+
+
+HAL_Status_t RAM_ATTR i2c_receive(i2c_transaction_t *trans, char *dst, uint8_t len, uint32_t timeout_us)
+{
+    HAL_Status_t res;
+    res = i2c_receive_start(trans, dst, len);
+    if (res == HAL_DMA_OK)
+    {
+        res = i2c_transaction_end(trans, timeout_us);
+    }
+    return res;
+}
+
+
+__attribute__((weak)) void i2c_transaction_err_decode(i2c_transaction_t *trans)
 {
     xprintf("%lu", HAL_Millis());
     char tag[20];
