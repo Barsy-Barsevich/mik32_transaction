@@ -6,7 +6,6 @@
 #include "dma_transaction.h"
 #include "xprintf.h"
 
-
 typedef enum
 {
     I2C_TRANSACTION_TRANSMIT = 0,
@@ -41,6 +40,7 @@ typedef struct
     /* Error status can be read after i2c_transaction_end call */
     bool status_dma_error;
     i2c_transaction_err_t status_i2c_error;
+    bool _done;
 } i2c_transaction_t;
 
 
@@ -50,5 +50,7 @@ HAL_Status_t i2c_transaction_end(i2c_transaction_t *trans, uint32_t timeout_us);
 HAL_Status_t i2c_transmit(i2c_transaction_t *trans, const char *src, uint8_t len, uint32_t timeout_us);
 HAL_Status_t i2c_receive_start(i2c_transaction_t *trans, char *dst, uint8_t len);
 HAL_Status_t i2c_receive(i2c_transaction_t *trans, char *dst, uint8_t len, uint32_t timeout_us);
+HAL_Status_t i2c_repeat_transaction_start(i2c_transaction_t *trans);
+HAL_Status_t i2c_repeat_transaction(i2c_transaction_t *trans, uint32_t timeout_us);
 
 void i2c_transaction_err_decode(i2c_transaction_t *trans);
