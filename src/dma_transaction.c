@@ -89,5 +89,10 @@ HAL_Status_t RAM_ATTR dma_transaction_wait(HAL_DMA_Transaction_t *transaction, u
             break;
         }
     }
+    // disable channel if the timeout
+    if (ret != HAL_DMA_OK)
+    {
+        DMA_CONFIG->CHANNELS[transaction->channel].CFG &= ~DMA_CH_CFG_ENABLE_M;
+    }
     return ret;
 }

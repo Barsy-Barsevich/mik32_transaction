@@ -6,6 +6,7 @@
 #include "mik32_hal.h"
 
 
+#define DMA_CH_AUTO     5
 
 typedef enum
 {
