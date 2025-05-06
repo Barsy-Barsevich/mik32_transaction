@@ -4,9 +4,9 @@
 #include "dma_config.h"
 #include "mik32_memory_map.h"
 #include "mik32_hal.h"
+#include "xprintf.h"
 
-
-#define DMA_CH_AUTO     5
+#define DMA_CH_AUTO     DMA_CHANNEL_COUNT
 
 typedef enum
 {
@@ -108,7 +108,7 @@ HAL_Status_t dma_transaction_init(HAL_DMA_Transaction_t *transaction, HAL_DMA_Co
  * @p transaction указатель на структуру-дескриптор транзакции
  * @return none
  */
-void dma_transaction_start(HAL_DMA_Transaction_t *transaction);
+HAL_Status_t dma_transaction_start(HAL_DMA_Transaction_t *transaction);
 /*!
  * @brief 
  */

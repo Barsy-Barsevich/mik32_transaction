@@ -12,7 +12,7 @@ HAL_Status_t dma_transaction_init(HAL_DMA_Transaction_t *transaction, HAL_DMA_Co
     __HAL_PCC_DMA_CLK_ENABLE();
     DMA_CONFIG->CONFIG_STATUS = 0x3F;
 
-    if (cfg->channel >= DMA_CHANNEL_COUNT)
+    if (cfg->channel > DMA_CHANNEL_COUNT)
         return HAL_DMA_INCORRECT_ARGUMENT;
     transaction->channel = cfg->channel;
     
@@ -48,13 +48,35 @@ HAL_Status_t dma_transaction_init(HAL_DMA_Transaction_t *transaction, HAL_DMA_Co
  * @p transaction указатель на структуру-дескриптор транзакции
  * @return none
  */
-void RAM_ATTR dma_transaction_start(HAL_DMA_Transaction_t *transaction)
+HAL_Status_t RAM_ATTR dma_transaction_start(HAL_DMA_Transaction_t *transaction)
 {
     //xprintf("cfg: %lX src: %lX dst: %lX len: %lX\n", transaction->config.CFG, transaction->config.SRC, transaction->config.DST, transaction->config.LEN);
-    DMA_CONFIG->CHANNELS[transaction->channel].SRC = transaction->config.SRC;
-    DMA_CONFIG->CHANNELS[transaction->channel].DST = transaction->config.DST;
-    DMA_CONFIG->CHANNELS[transaction->channel].LEN = transaction->config.LEN-1;
-    DMA_CONFIG->CHANNELS[transaction->channel].CFG = transaction->config.CFG;
+    // DMA_CONFIG->CHANNELS[transaction->channel].SRC = transaction->config.SRC;
+    // DMA_CONFIG->CHANNELS[transaction->channel].DST = transaction->config.DST;
+    // DMA_CONFIG->CHANNELS[transaction->channel].LEN = transaction->config.LEN-1;
+    // DMA_CONFIG->CHANNELS[transaction->channel].CFG = transaction->config.CFG;
+    uint8_t ch = transaction->channel;
+    if (ch > DMA_CHANNEL_COUNT) return HAL_DMA_INCORRECT_ARGUMENT;
+    if (ch == DMA_CHANNEL_COUNT) //DMA_CH_AUTO
+    {
+        uint32_t config_status = DMA_CONFIG->CONFIG_STATUS;
+        bool status = false;
+        for (uint8_t i=0; i<DMA_CHANNEL_COUNT; i++)
+        {
+            if ((config_status & (1 << (i+DMA_STATUS_READY_S))) != 0)
+            {
+                ch = i;
+                status = true;
+                break;
+            }
+        }
+        if (!status) return HAL_DMA_ERROR;
+    }
+    DMA_CONFIG->CHANNELS[ch].SRC = transaction->config.SRC;
+    DMA_CONFIG->CHANNELS[ch].DST = transaction->config.DST;
+    DMA_CONFIG->CHANNELS[ch].LEN = transaction->config.LEN-1;
+    DMA_CONFIG->CHANNELS[ch].CFG = transaction->config.CFG;
+    return HAL_DMA_OK;
 }
 
 

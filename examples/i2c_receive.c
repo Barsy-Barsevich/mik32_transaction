@@ -6,13 +6,16 @@
 
 #include "mik32_hal_scr1_timer.h"
 
-/*
-* В данном примере демонстрируется работа I2C в режиме ведущего.
-* Ведущий записывает по адресу 0x36 10 байт, а затем считывает.
-* Используется режим автоматического окончания.
-*
-* Данный пример может быть использован совместно с ведомым из примера Hal_I2C_Slave.
-*/
+/**
+ * This example shows how to receive data via I2C using i2c_transaction library.
+ * 
+ * This example reads WHO_AM_I register from MPU6050.
+ * 
+ * A new option - DMA_CH_AUTO - is available now.
+ * If the dma channel chosen as DMA_CH_AUTO, the library checks DMA channels'
+ * ready status each time when transaction started. I takes a bit extra processor's
+ * time but provides more abstract access to DMA resources.
+ */
 
 uint32_t HAL_Micros()
 {
@@ -48,10 +51,9 @@ int main()
     UART_Init(UART_0, 3333, UART_CONTROL1_TE_M | UART_CONTROL1_M_8BIT_M, 0, 0);
     I2C0_Init();
 
-
     i2c_transaction_cfg_t tx_cfg = {
         .host = I2C_0,
-        .dma_channel = 0,
+        .dma_channel = DMA_CH_AUTO,
         .dma_priority = 3,
         .direction = I2C_TRANSACTION_TRANSMIT,
         .address = 0x68,
@@ -61,7 +63,7 @@ int main()
 
     i2c_transaction_cfg_t rx_cfg = {
         .host = I2C_0,
-        .dma_channel = 1,
+        .dma_channel = DMA_CH_AUTO,
         .dma_priority = 3,
         .direction = I2C_TRANSACTION_RECEIVE,
         .address = 0x68,
@@ -87,7 +89,8 @@ int main()
             i2c_transaction_err_decode(&rx_trans);
         }
         
-        // HAL_DelayMs(100);
+        xprintf("ID: 0x%02X\n", buf[0]);
+        HAL_DelayMs(1000);
     }
 }
 
@@ -122,7 +125,7 @@ static void I2C0_Init(void)
     hi2c0.Init.AutoEnd = I2C_AUTOEND_DISABLE;
 
     /* Настройка частоты */
-    hi2c0.Init.frequency = 400000;
+    hi2c0.Init.frequency = 100000;
     hi2c0.Init.duty_factor = 2;
 
 
