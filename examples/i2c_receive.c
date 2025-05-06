@@ -9,6 +9,8 @@
 /**
  * This example shows how to receive data via I2C using i2c_transaction library.
  * 
+ * This example reads WHO_AM_I register from MPU6050.
+ * 
  * A new option - DMA_CH_AUTO - is available now.
  * If the dma channel chosen as DMA_CH_AUTO, the library checks DMA channels'
  * ready status each time when transaction started. I takes a bit extra processor's
