@@ -6,13 +6,17 @@
 
 #include "mik32_hal_scr1_timer.h"
 
-/*
-* В данном примере демонстрируется работа I2C в режиме ведущего.
-* Ведущий записывает по адресу 0x36 10 байт, а затем считывает.
-* Используется режим автоматического окончания.
-*
-* Данный пример может быть использован совместно с ведомым из примера Hal_I2C_Slave.
-*/
+/**
+ * This example shows how data can be transmitted via I2C using i2c_dma_library.
+ * 
+ * - i2c_transmit_start starts i2c transmitting transaction
+ * - i2c_receive_start starts i2c receiving transaction
+ * - i2c_transaction_end finishes the i2c transmitting or receiving transaction
+ * - i2c_transmit function includes i2c_transmit_start & i2c_transaction_end calls.
+ *   It polling the ready status and returns result when the transaction has finished
+ * - i2c_receive function includes i2c_receive_start & i2c_transaction_end calls.
+ *   It polling the ready status and returns result when the transaction has finished
+ */
 
 uint32_t HAL_Micros()
 {

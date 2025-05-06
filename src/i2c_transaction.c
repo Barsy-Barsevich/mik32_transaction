@@ -101,7 +101,8 @@ HAL_Status_t RAM_ATTR i2c_transmit_start(i2c_transaction_t *trans, const char *s
     /* Настройка и включение канала DMA */
     trans->dma_transaction.config.SRC = (uint32_t)src;
     trans->dma_transaction.config.LEN = len;
-    dma_transaction_start(&(trans->dma_transaction));
+    HAL_Status_t res = dma_transaction_start(&(trans->dma_transaction));
+    // xprintf("Trans: res = %d\n", res);
 
     // HAL_GPIO_WritePin(GPIO_2, GPIO_PIN_7, 1);
     /* Старт */
@@ -213,16 +214,14 @@ HAL_Status_t RAM_ATTR i2c_repeat_transaction(i2c_transaction_t *trans, uint32_t 
 
 __attribute__((weak)) void i2c_transaction_err_decode(i2c_transaction_t *trans)
 {
-    xprintf("%lu", HAL_Millis());
-    char tag[20];
-    xsprintf(tag, "%lu\tI2C transaction: ");
+    char tag[] = "\tI2C transaction: ";
 
-    if (trans->status_dma_error) xprintf("%sI2C transaction: DMA err\n", tag);
+    if (trans->status_dma_error) xprintf("%lu%sDMA err\n", HAL_Millis(), tag);
     i2c_transaction_err_t err = trans->status_i2c_error;
-    if (err == I2C_TRANSACTION_ERR_NONE) xprintf("%sI2C err: [NONE] (there aren't any error)\n", tag);
-    if (err & I2C_TRANSACTION_ERR_BERR) xprintf("%sI2C err: [BERR] (bus error)\n", tag);
-    if (err & I2C_TRANSACTION_ERR_ARLO) xprintf("%sI2C err: [ARLO] (the arbitrary fault)\n", tag);
-    if (err & I2C_TRANSACTION_ERR_OVR) xprintf("%sI2C err: [OVR] (data over/underloading error)\n", tag);
+    // if (err == I2C_TRANSACTION_ERR_NONE) xprintf("%sI2C err: [NONE] (there aren't any error)\n", tag);
+    if (err & I2C_TRANSACTION_ERR_BERR) xprintf("%lu%sI2C err: [BERR] (bus error)\n", HAL_Millis(), tag);
+    if (err & I2C_TRANSACTION_ERR_ARLO) xprintf("%lu%sI2C err: [ARLO] (the arbitrary fault)\n", HAL_Millis(), tag);
+    if (err & I2C_TRANSACTION_ERR_OVR) xprintf("%lu%sI2C err: [OVR] (data over/underloading error)\n", HAL_Millis(), tag);
     if (err & ~(I2C_TRANSACTION_ERR_BERR | I2C_TRANSACTION_ERR_ARLO | I2C_TRANSACTION_ERR_OVR))
-        xprintf("%sI2C err: [Unexpected] (unexpected error, code 0x%02X)\n", tag, err);
+        xprintf("%lu%sI2C err: [Unexpected] (unexpected error, code 0x%02X)\n", HAL_Millis(), tag, err);
 }
