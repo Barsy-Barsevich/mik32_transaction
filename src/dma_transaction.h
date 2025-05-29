@@ -10,10 +10,10 @@
 
 typedef enum
 {
-    HAL_DMA_OK = 0,
-    HAL_DMA_ERROR = 1,
-    HAL_DMA_TIMEOUT = 2,
-    HAL_DMA_INCORRECT_ARGUMENT = 3,
+    DMA_STATUS_OK = 0,
+    DMA_STATUS_ERROR = 1,
+    DMA_STATUS_TIMEOUT = 2,
+    DMA_STATUS_INCORRECT_ARGUMENT = 3,
 } dma_status_t;
 
 typedef enum
