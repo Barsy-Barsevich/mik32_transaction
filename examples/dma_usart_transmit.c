@@ -39,7 +39,7 @@ static char arr[] = "abcdefghijklmn0123456789\n";
 
 
 
-HAL_DMA_Transaction_t uart_transaction;
+dma_transaction_t uart_transaction;
 
 int main()
 {
@@ -50,7 +50,7 @@ int main()
     USART_Init();
 
 
-    HAL_DMA_Config_t cfg = {
+    dma_transaction_cfg_t cfg = {
         .priority = 3,
         .read_mode = DMA_MEMORY_MODE,
         .write_mode = DMA_PERIPHERY_MODE,
@@ -77,7 +77,7 @@ int main()
     while (1)
     {
         dma_transaction_start(&uart_transaction);
-        if (dma_transaction_wait(&uart_transaction, 100000) != HAL_DMA_OK)
+        if (dma_transaction_wait(&uart_transaction, 100000) != DMA_STATUS_OK)
         {
             xprintf("Timeout.\n");
         }

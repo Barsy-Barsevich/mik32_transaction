@@ -77,14 +77,14 @@ int main()
     
     while (1)
     {    
-        if (i2c_transmit(&tx_trans, reg_addr, sizeof(reg_addr), 1000) != HAL_DMA_OK)
+        if (i2c_transmit(&tx_trans, reg_addr, sizeof(reg_addr), 1000) != DMA_STATUS_OK)
         {
             i2c_transaction_err_decode(&tx_trans);
         }
         // HAL_StatusTypeDef res = HAL_I2C_Master_Transmit(&hi2c0, 0x68, (uint8_t*)reg_addr, 1, 1000000);
         // xprintf("ans: %d\n", res);
 
-        if (i2c_receive(&rx_trans, buf, 1, 1000) != HAL_DMA_OK)
+        if (i2c_receive(&rx_trans, buf, 1, 1000) != DMA_STATUS_OK)
         {
             i2c_transaction_err_decode(&rx_trans);
         }
