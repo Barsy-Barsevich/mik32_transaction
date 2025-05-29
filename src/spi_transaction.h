@@ -35,5 +35,5 @@ HAL_Status_t spi_transmit_start(spi_transaction_t *trans, const char *src, uint3
 bool spi_transaction_ready(spi_transaction_t *trans);
 HAL_Status_t spi_transaction_end(spi_transaction_t *trans, uint32_t timeout_us);
 HAL_Status_t spi_transmit(spi_transaction_t *trans, const char *src, uint32_t len_bytes, uint32_t timeout_us);
-HAL_Status_t spi_receive_start(spi_transaction_t *trans);
-HAL_Status_t spi_receive(spi_transaction_t *trans, uint32_t timeout_us);
+HAL_Status_t spi_receive_start(spi_transaction_t *trans, char *dst, uint32_t len_bytes);
+HAL_Status_t spi_receive(spi_transaction_t *trans, char *dst, uint32_t len_bytes, uint32_t timeout_us);
