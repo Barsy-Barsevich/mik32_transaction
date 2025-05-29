@@ -7,13 +7,13 @@
  * @p cfg указатель на структуру инициализации транзакции
  * @return HAL_OK или HAL_INCORRECT_ARGUMENT
  */
-HAL_Status_t dma_transaction_init(HAL_DMA_Transaction_t *transaction, HAL_DMA_Config_t *cfg)
+dma_status_t dma_transaction_init(dma_transaction_t *transaction, dma_transaction_cfg_t *cfg)
 {
     __HAL_PCC_DMA_CLK_ENABLE();
     DMA_CONFIG->CONFIG_STATUS = 0x3F;
 
     if (cfg->channel > DMA_CHANNEL_COUNT)
-        return HAL_DMA_INCORRECT_ARGUMENT;
+        return DMA_STATUS_INCORRECT_ARGUMENT;
     transaction->channel = cfg->channel;
     
     uint32_t cfg_word = 0;
@@ -39,7 +39,7 @@ HAL_Status_t dma_transaction_init(HAL_DMA_Transaction_t *transaction, HAL_DMA_Co
     transaction->config.CFG = cfg_word;
 
     // xprintf("%04X\n", cfg_word);
-    return HAL_DMA_OK;
+    return DMA_STATUS_OK;
 }
 
 
@@ -48,7 +48,7 @@ HAL_Status_t dma_transaction_init(HAL_DMA_Transaction_t *transaction, HAL_DMA_Co
  * @p transaction указатель на структуру-дескриптор транзакции
  * @return none
  */
-HAL_Status_t RAM_ATTR dma_transaction_start(HAL_DMA_Transaction_t *transaction)
+dma_status_t RAM_ATTR dma_transaction_start(dma_transaction_t *transaction)
 {
     //xprintf("cfg: %lX src: %lX dst: %lX len: %lX\n", transaction->config.CFG, transaction->config.SRC, transaction->config.DST, transaction->config.LEN);
     // DMA_CONFIG->CHANNELS[transaction->channel].SRC = transaction->config.SRC;
@@ -56,7 +56,7 @@ HAL_Status_t RAM_ATTR dma_transaction_start(HAL_DMA_Transaction_t *transaction)
     // DMA_CONFIG->CHANNELS[transaction->channel].LEN = transaction->config.LEN-1;
     // DMA_CONFIG->CHANNELS[transaction->channel].CFG = transaction->config.CFG;
     uint8_t ch = transaction->channel;
-    if (ch > DMA_CHANNEL_COUNT) return HAL_DMA_INCORRECT_ARGUMENT;
+    if (ch > DMA_CHANNEL_COUNT) return DMA_STATUS_INCORRECT_ARGUMENT;
     if (ch == DMA_CHANNEL_COUNT) //DMA_CH_AUTO
     {
         uint32_t config_status = DMA_CONFIG->CONFIG_STATUS;
@@ -70,21 +70,21 @@ HAL_Status_t RAM_ATTR dma_transaction_start(HAL_DMA_Transaction_t *transaction)
                 break;
             }
         }
-        if (!status) return HAL_DMA_ERROR;
+        if (!status) return DMA_STATUS_ERROR;
     }
     transaction->temp_channel = ch;
     DMA_CONFIG->CHANNELS[ch].SRC = transaction->config.SRC;
     DMA_CONFIG->CHANNELS[ch].DST = transaction->config.DST;
     DMA_CONFIG->CHANNELS[ch].LEN = transaction->config.LEN-1;
     DMA_CONFIG->CHANNELS[ch].CFG = transaction->config.CFG;
-    return HAL_DMA_OK;
+    return DMA_STATUS_OK;
 }
 
 
 /*!
  * @brief 
  */
-bool RAM_ATTR dma_transaction_ready(HAL_DMA_Transaction_t *transaction)
+bool RAM_ATTR dma_transaction_ready(dma_transaction_t *transaction)
 {
     uint32_t mask = (1 << transaction->channel) << DMA_STATUS_READY_S;
     bool ret = false;
@@ -99,23 +99,45 @@ bool RAM_ATTR dma_transaction_ready(HAL_DMA_Transaction_t *transaction)
  * @p timeout_us максимальное время ожидания в микросекундах
  * @return HAL_OK или HAL_TIMEOUT
  * */
-HAL_Status_t RAM_ATTR dma_transaction_wait(HAL_DMA_Transaction_t *transaction, uint32_t timeout_us)
+dma_status_t RAM_ATTR dma_transaction_wait(dma_transaction_t *transaction, uint32_t timeout_us)
 {
     uint32_t mask = (1 << transaction->temp_channel) << DMA_STATUS_READY_S;
     uint32_t timestamp = HAL_Micros();
-    HAL_Status_t ret = HAL_DMA_TIMEOUT;
+    dma_status_t ret = DMA_STATUS_TIMEOUT;
     while (HAL_Micros() - timestamp < timeout_us)
     {
         if ((DMA_CONFIG->CONFIG_STATUS & mask) != 0)
         {
-            ret = HAL_DMA_OK;
+            ret = DMA_STATUS_OK;
             break;
         }
     }
     // disable channel if the timeout
-    if (ret != HAL_DMA_OK)
+    if (ret != DMA_STATUS_OK)
     {
         DMA_CONFIG->CHANNELS[transaction->temp_channel].CFG &= ~DMA_CH_CFG_ENABLE_M;
     }
     return ret;
+}
+
+void dma_status_decoder(dma_status_t errcode)
+{
+    xprintf("DMA status: ");
+    switch (errcode)
+    {
+        case DMA_STATUS_OK:
+            xprintf("no error\n");
+            break;
+        case DMA_STATUS_ERROR:
+            xprintf("error\n");
+            break;
+        case DMA_STATUS_INCORRECT_ARGUMENT:
+            xprintf("incorrect argument\n");
+            break;
+        case DMA_STATUS_TIMEOUT:
+            xprintf("timeout\n");
+            break;
+        default:
+            xprintf("unexpected error (%u)\n", errcode);
+    }
 }

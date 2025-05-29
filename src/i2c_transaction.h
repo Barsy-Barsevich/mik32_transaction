@@ -33,7 +33,7 @@ typedef struct
 typedef struct
 {
     I2C_TypeDef *host;
-    HAL_DMA_Transaction_t dma_transaction;
+    dma_transaction_t dma_transaction;
     i2c_transaction_direction_t direction;
     uint16_t address;
     bool use_10bit_address;
@@ -44,13 +44,12 @@ typedef struct
 } i2c_transaction_t;
 
 
-HAL_Status_t i2c_transaction_init(i2c_transaction_t *trans, i2c_transaction_cfg_t *cfg);
-HAL_Status_t i2c_transmit_start(i2c_transaction_t *trans, const char *src, uint8_t len);
-HAL_Status_t i2c_transaction_end(i2c_transaction_t *trans, uint32_t timeout_us);
-HAL_Status_t i2c_transmit(i2c_transaction_t *trans, const char *src, uint8_t len, uint32_t timeout_us);
-HAL_Status_t i2c_receive_start(i2c_transaction_t *trans, char *dst, uint8_t len);
-HAL_Status_t i2c_receive(i2c_transaction_t *trans, char *dst, uint8_t len, uint32_t timeout_us);
-HAL_Status_t i2c_repeat_transaction_start(i2c_transaction_t *trans);
-HAL_Status_t i2c_repeat_transaction(i2c_transaction_t *trans, uint32_t timeout_us);
-
+dma_status_t i2c_transaction_init(i2c_transaction_t *trans, i2c_transaction_cfg_t *cfg);
+dma_status_t i2c_transmit_start(i2c_transaction_t *trans, const char *src, uint8_t len_bytes);
+dma_status_t i2c_transaction_end(i2c_transaction_t *trans, uint32_t timeout_us);
+dma_status_t i2c_transmit(i2c_transaction_t *trans, const char *src, uint8_t len_bytes, uint32_t timeout_us);
+dma_status_t i2c_receive_start(i2c_transaction_t *trans, char *dst, uint8_t len_bytes);
+dma_status_t i2c_receive(i2c_transaction_t *trans, char *dst, uint8_t len_bytes, uint32_t timeout_us);
+dma_status_t i2c_repeat_transaction_start(i2c_transaction_t *trans);
+dma_status_t i2c_repeat_transaction(i2c_transaction_t *trans, uint32_t timeout_us);
 void i2c_transaction_err_decode(i2c_transaction_t *trans);
