@@ -66,7 +66,10 @@ HAL_Status_t RAM_ATTR spi_transmit_start(spi_transaction_t *trans, const char *s
 {
     if (trans->direction != SPI_TRANSACTION_TRANSMIT)
         return HAL_DMA_INCORRECT_ARGUMENT;
-    trans->pre_cb();
+    if (trans->pre_cb != NULL)
+    {
+        trans->pre_cb();
+    }
     trans->dma_transaction.config.SRC = (uint32_t)src;
     trans->dma_transaction.config.LEN = len_bytes;
     dma_transaction_start(&(trans->dma_transaction));
@@ -82,7 +85,10 @@ HAL_Status_t RAM_ATTR spi_transaction_end(spi_transaction_t *trans, uint32_t tim
 {
     HAL_Status_t res;
     res =  dma_transaction_wait(&(trans->dma_transaction), timeout_us);
-    trans->post_cb();
+    if (trans->post_cb != NULL)
+    {
+        trans->post_cb();
+    }
     return res;
 }
 
@@ -90,6 +96,31 @@ HAL_Status_t RAM_ATTR spi_transmit(spi_transaction_t *trans, const char *src, ui
 {
     HAL_Status_t res;
     res = spi_transmit_start(trans, src, len_bytes);
+    if (res == HAL_DMA_OK)
+    {
+        res = spi_transaction_end(trans, timeout_us);
+    }
+    return res;
+}
+
+HAL_Status_t spi_receive_start(spi_transaction_t *trans, char *dst, uint32_t len_bytes)
+{
+    if (trans->direction != SPI_TRANSACTION_RECEIVE)
+        return HAL_DMA_INCORRECT_ARGUMENT;
+    if (trans->pre_cb != NULL)
+    {
+        trans->pre_cb();
+    }
+    trans->dma_transaction.config.DST = (uint32_t)dst;
+    trans->dma_transaction.config.LEN = len_bytes;
+    dma_transaction_start(&(trans->dma_transaction));
+    return HAL_DMA_OK;
+}
+
+HAL_Status_t spi_receive(spi_transaction_t *trans, char *dst, uint32_t len_bytes, uint32_t timeout_us)
+{
+    HAL_Status_t res;
+    res = spi_receive_start(trans, dst, len_bytes);
     if (res == HAL_DMA_OK)
     {
         res = spi_transaction_end(trans, timeout_us);
