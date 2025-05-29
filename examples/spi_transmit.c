@@ -18,12 +18,12 @@ spi_transaction_t spi_trans;
 
 
 
-void cs_down()
+void cs_down(uint32_t dummy)
 {
     HAL_GPIO_WritePin(GPIO_0, GPIO_PIN_7, 0);
 }
 
-void cs_up()
+void cs_up(uint32_t dummy)
 {
     HAL_GPIO_WritePin(GPIO_0, GPIO_PIN_7, 1);
 }
@@ -35,14 +35,13 @@ int main()
     SystemClock_Config();
     UART_Init(UART_0, 3333, UART_CONTROL1_TE_M | UART_CONTROL1_M_8BIT_M, 0, 0);
     SPI0_Init();
-    uint8_t master_output[] = {0x01, 0x55};
-    uint8_t master_input[sizeof(master_output)];
+    char master_output[] = {0x01, 0x55};
     
     
     spi_transaction_cfg_t spi_trans_cfg = {
         .host = SPI_0,
         .direction = SPI_TRANSACTION_TRANSMIT,
-        .dma_channel = 0,
+        .dma_channel = DMA_CH_AUTO,
         .dma_priority = 3,
         .pre_cb = cs_down,
         .post_cb = cs_up
@@ -51,39 +50,7 @@ int main()
 
     while (1)
     {
-        HAL_SPI_CS_Enable(&hspi0, SPI_CS_0);
-        HAL_SPI_Enable(&hspi0);
         spi_transmit(&spi_trans, master_output, sizeof(master_output), 1000);
-        HAL_SPI_Disable(&hspi0);
-        // /* Начало передачи в ручном режиме управления CS */
-        // if (hspi0.Init.ManualCS == SPI_MANUALCS_ON)
-        // {
-        //     __HAL_SPI_ENABLE(&hspi0);
-        //     HAL_SPI_CS_Enable(&hspi0, SPI_CS_0);
-        // }
-        // /* Передача и прием данных */
-        // HAL_StatusTypeDef SPI_Status = HAL_SPI_Exchange(&hspi0, master_output, master_input, sizeof(master_output), SPI_TIMEOUT_DEFAULT);
-        // if (SPI_Status != HAL_OK)
-        // {
-        //     xprintf("SPI_Error %d, OVR %d, MODF %d\n", SPI_Status, hspi0.ErrorCode & HAL_SPI_ERROR_OVR, hspi0.ErrorCode & HAL_SPI_ERROR_MODF);
-        //     HAL_SPI_ClearError(&hspi0);
-        // }
-        // /* Конец передачи в ручном режиме управления CS */
-        // if (hspi0.Init.ManualCS == SPI_MANUALCS_ON)
-        // {
-        //     HAL_SPI_CS_Disable(&hspi0);
-        //     __HAL_SPI_DISABLE(&hspi0);
-        // }
-
-
-
-        // /* Вывод принятый данных и обнуление массива master_input */
-        // for (uint32_t i = 0; i < sizeof(master_input); i++)
-        // {
-        //     xprintf("master_input[%d] = 0x%02x\n", i, master_input[i]);
-        //     master_input[i] = 0;
-        // }
-        // xprintf("\n");
     }
 }
 void SystemClock_Config(void)

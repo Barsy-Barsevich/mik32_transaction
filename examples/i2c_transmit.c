@@ -68,9 +68,9 @@ int main()
     
     while (1)
     {    
-        if (i2c_transmit_start(&trans, arr, sizeof(arr)) != HAL_DMA_OK)
+        if (i2c_transmit_start(&trans, arr, sizeof(arr)) != DMA_STATUS_OK)
             xprintf("Start error\n");
-        if (i2c_transaction_end(&trans, 100000) != HAL_DMA_OK)
+        if (i2c_transaction_end(&trans, 100000) != DMA_STATUS_OK)
             xprintf("Wait error\n");
         
         i2c_transaction_err_decode(&trans);
