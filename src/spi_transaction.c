@@ -71,6 +71,7 @@ HAL_Status_t RAM_ATTR spi_transmit_start(spi_transaction_t *trans, const char *s
     {
         trans->pre_cb(trans->token);
     }
+    trans->host->ENABLE = SPI_ENABLE_M;
     trans->dma_transaction.config.SRC = (uint32_t)src;
     trans->dma_transaction.config.LEN = len_bytes;
     return dma_transaction_start(&(trans->dma_transaction));
