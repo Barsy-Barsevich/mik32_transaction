@@ -17,8 +17,9 @@ typedef struct
     uint8_t dma_channel;
     uint8_t dma_priority;
     spi_transaction_direction_t direction;
-    void (*pre_cb)(void);
-    void (*post_cb)(void);
+    uint32_t token;
+    void (*pre_cb)(uint32_t);
+    void (*post_cb)(uint32_t);
 } spi_transaction_cfg_t;
 
 typedef struct
@@ -26,8 +27,9 @@ typedef struct
     SPI_TypeDef *host;
     HAL_DMA_Transaction_t dma_transaction;
     spi_transaction_direction_t direction;
-    void (*pre_cb)(void);
-    void (*post_cb)(void);
+    uint32_t token;
+    void (*pre_cb)(uint32_t);
+    void (*post_cb)(uint32_t);
 } spi_transaction_t;
 
 HAL_Status_t spi_transaction_init(spi_transaction_t *trans, spi_transaction_cfg_t *cfg);

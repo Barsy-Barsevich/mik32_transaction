@@ -6,6 +6,7 @@ HAL_Status_t spi_transaction_init(spi_transaction_t *trans, spi_transaction_cfg_
     HAL_Status_t res;
     trans->host = cfg->host;
     trans->direction = cfg->direction;
+    trans->token = cfg->token;
     trans->pre_cb = cfg->pre_cb;
     trans->post_cb = cfg->post_cb;
 
@@ -68,12 +69,11 @@ HAL_Status_t RAM_ATTR spi_transmit_start(spi_transaction_t *trans, const char *s
         return HAL_DMA_INCORRECT_ARGUMENT;
     if (trans->pre_cb != NULL)
     {
-        trans->pre_cb();
+        trans->pre_cb(trans->token);
     }
     trans->dma_transaction.config.SRC = (uint32_t)src;
     trans->dma_transaction.config.LEN = len_bytes;
-    dma_transaction_start(&(trans->dma_transaction));
-    return HAL_DMA_OK;
+    return dma_transaction_start(&(trans->dma_transaction));
 }
 
 bool RAM_ATTR spi_transaction_ready(spi_transaction_t *trans)
@@ -85,9 +85,10 @@ HAL_Status_t RAM_ATTR spi_transaction_end(spi_transaction_t *trans, uint32_t tim
 {
     HAL_Status_t res;
     res =  dma_transaction_wait(&(trans->dma_transaction), timeout_us);
+    trans->host->ENABLE = 0;
     if (trans->post_cb != NULL)
     {
-        trans->post_cb();
+        trans->post_cb(trans->token);
     }
     return res;
 }
@@ -109,8 +110,9 @@ HAL_Status_t spi_receive_start(spi_transaction_t *trans, char *dst, uint32_t len
         return HAL_DMA_INCORRECT_ARGUMENT;
     if (trans->pre_cb != NULL)
     {
-        trans->pre_cb();
+        trans->pre_cb(trans->token);
     }
+    trans->host->ENABLE = SPI_ENABLE_M;
     trans->dma_transaction.config.DST = (uint32_t)dst;
     trans->dma_transaction.config.LEN = len_bytes;
     dma_transaction_start(&(trans->dma_transaction));
