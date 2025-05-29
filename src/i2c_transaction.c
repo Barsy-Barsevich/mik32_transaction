@@ -1,9 +1,9 @@
 #include "i2c_transaction.h"
 
 
-HAL_Status_t i2c_transaction_init(i2c_transaction_t *trans, i2c_transaction_cfg_t *cfg)
+dma_status_t i2c_transaction_init(i2c_transaction_t *trans, i2c_transaction_cfg_t *cfg)
 {
-    HAL_Status_t res;
+    dma_status_t res;
     trans->host = cfg->host;
     trans->direction = cfg->direction;
     trans->address = cfg->address;
@@ -24,7 +24,7 @@ HAL_Status_t i2c_transaction_init(i2c_transaction_t *trans, i2c_transaction_cfg_
         trans->host->CR2 &= ~I2C_CR2_HEAD10R_M;
     }
 
-    HAL_DMA_Config_t dma_cfg = {0};
+    dma_transaction_cfg_t dma_cfg = {0};
     dma_cfg.priority = cfg->dma_priority;
     dma_cfg.channel = cfg->dma_channel;
     dma_cfg.irq_en = 0;
@@ -76,7 +76,7 @@ HAL_Status_t i2c_transaction_init(i2c_transaction_t *trans, i2c_transaction_cfg_
 }
 
 
-HAL_Status_t RAM_ATTR i2c_transmit_start(i2c_transaction_t *trans, const char *src, uint8_t len)
+dma_status_t RAM_ATTR i2c_transmit_start(i2c_transaction_t *trans, const char *src, uint8_t len)
 {
     if (trans->direction != I2C_TRANSACTION_TRANSMIT)
     return HAL_DMA_INCORRECT_ARGUMENT;
@@ -101,7 +101,7 @@ HAL_Status_t RAM_ATTR i2c_transmit_start(i2c_transaction_t *trans, const char *s
     /* Настройка и включение канала DMA */
     trans->dma_transaction.config.SRC = (uint32_t)src;
     trans->dma_transaction.config.LEN = len;
-    HAL_Status_t res = dma_transaction_start(&(trans->dma_transaction));
+    dma_status_t res = dma_transaction_start(&(trans->dma_transaction));
     // xprintf("Trans: res = %d\n", res);
 
     // HAL_GPIO_WritePin(GPIO_2, GPIO_PIN_7, 1);
@@ -112,9 +112,9 @@ HAL_Status_t RAM_ATTR i2c_transmit_start(i2c_transaction_t *trans, const char *s
 }
 
 
-HAL_Status_t RAM_ATTR i2c_transaction_end(i2c_transaction_t *trans, uint32_t timeout_us)
+dma_status_t RAM_ATTR i2c_transaction_end(i2c_transaction_t *trans, uint32_t timeout_us)
 {
-    HAL_Status_t res = dma_transaction_wait(&(trans->dma_transaction), timeout_us);
+    dma_status_t res = dma_transaction_wait(&(trans->dma_transaction), timeout_us);
     if (res != HAL_DMA_OK) return res;
     // HAL_GPIO_WritePin(GPIO_2, GPIO_PIN_7, 0);
     
@@ -132,9 +132,9 @@ HAL_Status_t RAM_ATTR i2c_transaction_end(i2c_transaction_t *trans, uint32_t tim
 }
 
 
-HAL_Status_t RAM_ATTR i2c_transmit(i2c_transaction_t *trans, const char *src, uint8_t len, uint32_t timeout_us)
+dma_status_t RAM_ATTR i2c_transmit(i2c_transaction_t *trans, const char *src, uint8_t len, uint32_t timeout_us)
 {
-    HAL_Status_t res;
+    dma_status_t res;
     res = i2c_transmit_start(trans, src, len);
     if (res == HAL_DMA_OK)
     {
@@ -144,7 +144,7 @@ HAL_Status_t RAM_ATTR i2c_transmit(i2c_transaction_t *trans, const char *src, ui
 }
 
 
-HAL_Status_t RAM_ATTR i2c_receive_start(i2c_transaction_t *trans, char *dst, uint8_t len)
+dma_status_t RAM_ATTR i2c_receive_start(i2c_transaction_t *trans, char *dst, uint8_t len)
 {
     if (trans->direction != I2C_TRANSACTION_RECEIVE)
     return HAL_DMA_INCORRECT_ARGUMENT;
@@ -179,9 +179,9 @@ HAL_Status_t RAM_ATTR i2c_receive_start(i2c_transaction_t *trans, char *dst, uin
 }
 
 
-HAL_Status_t RAM_ATTR i2c_receive(i2c_transaction_t *trans, char *dst, uint8_t len, uint32_t timeout_us)
+dma_status_t RAM_ATTR i2c_receive(i2c_transaction_t *trans, char *dst, uint8_t len, uint32_t timeout_us)
 {
-    HAL_Status_t res;
+    dma_status_t res;
     res = i2c_receive_start(trans, dst, len);
     if (res == HAL_DMA_OK)
     {
@@ -191,7 +191,7 @@ HAL_Status_t RAM_ATTR i2c_receive(i2c_transaction_t *trans, char *dst, uint8_t l
 }
 
 
-HAL_Status_t RAM_ATTR i2c_repeat_transaction_start(i2c_transaction_t *trans)
+dma_status_t RAM_ATTR i2c_repeat_transaction_start(i2c_transaction_t *trans)
 {
     if (!trans->_done) return HAL_DMA_ERROR;
     DMA_CONFIG->CHANNELS[trans->dma_transaction.channel].CFG = trans->dma_transaction.config.CFG;
@@ -200,9 +200,9 @@ HAL_Status_t RAM_ATTR i2c_repeat_transaction_start(i2c_transaction_t *trans)
 }
 
 
-HAL_Status_t RAM_ATTR i2c_repeat_transaction(i2c_transaction_t *trans, uint32_t timeout_us)
+dma_status_t RAM_ATTR i2c_repeat_transaction(i2c_transaction_t *trans, uint32_t timeout_us)
 {
-    HAL_Status_t res;
+    dma_status_t res;
     res = i2c_repeat_transaction_start(trans);
     if (res == HAL_DMA_OK)
     {

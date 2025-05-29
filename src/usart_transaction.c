@@ -1,12 +1,12 @@
 #include "usart_transaction.h"
 
 
-HAL_Status_t usart_transaction_init(usart_transaction_t *trans, usart_transaction_cfg_t *cfg)
+dma_status_t usart_transaction_init(usart_transaction_t *trans, usart_transaction_cfg_t *cfg)
 {
     trans->host = cfg->host;
     trans->direction = cfg->direction;
 
-    HAL_DMA_Config_t dma_cfg = {0};
+    dma_transaction_cfg_t dma_cfg = {0};
     dma_cfg.priority = cfg->dma_priority;
     dma_cfg.read_block_size = DMA_BLOCK_8BIT;
     dma_cfg.write_block_size = DMA_BLOCK_8BIT;
@@ -74,7 +74,7 @@ void RAM_ATTR usart_transaction_start(usart_transaction_t *trans, char *arr, uin
     dma_transaction_start(&(trans->dma_transaction));
 }
 
-HAL_Status_t RAM_ATTR usart_transmit_start(usart_transaction_t *trans, const char *src, uint32_t len)
+dma_status_t RAM_ATTR usart_transmit_start(usart_transaction_t *trans, const char *src, uint32_t len)
 {
     if (trans->direction != USART_TRANSACTION_TRANSMIT)
         return HAL_DMA_INCORRECT_ARGUMENT;
@@ -84,16 +84,16 @@ HAL_Status_t RAM_ATTR usart_transmit_start(usart_transaction_t *trans, const cha
     return HAL_DMA_OK;
 }
 
-HAL_Status_t RAM_ATTR usart_transmit(usart_transaction_t *trans, const char *src, uint32_t len, uint32_t timeout_us)
+dma_status_t RAM_ATTR usart_transmit(usart_transaction_t *trans, const char *src, uint32_t len, uint32_t timeout_us)
 {
-    HAL_Status_t res;
+    dma_status_t res;
     res = usart_transmit_start(trans, src, len);
     if (res == HAL_DMA_OK)
         res = usart_transaction_wait(trans, timeout_us);
     return res;
 }
 
-HAL_Status_t RAM_ATTR usart_receive_start(usart_transaction_t *trans, char *dst, uint32_t len)
+dma_status_t RAM_ATTR usart_receive_start(usart_transaction_t *trans, char *dst, uint32_t len)
 {
     if (trans->direction != USART_TRANSACTION_RECEIVE)
         return HAL_DMA_INCORRECT_ARGUMENT;
@@ -103,9 +103,9 @@ HAL_Status_t RAM_ATTR usart_receive_start(usart_transaction_t *trans, char *dst,
     return HAL_DMA_OK;
 }
 
-HAL_Status_t RAM_ATTR usart_receive(usart_transaction_t *trans, char *dst, uint32_t len, uint32_t timeout_us)
+dma_status_t RAM_ATTR usart_receive(usart_transaction_t *trans, char *dst, uint32_t len, uint32_t timeout_us)
 {
-    HAL_Status_t res;
+    dma_status_t res;
     res = usart_receive_start(trans, dst, len);
     if (res == HAL_DMA_OK)
         res = usart_transaction_wait(trans, timeout_us);
