@@ -72,6 +72,7 @@ HAL_Status_t RAM_ATTR dma_transaction_start(HAL_DMA_Transaction_t *transaction)
         }
         if (!status) return HAL_DMA_ERROR;
     }
+    transaction->temp_channel = ch;
     DMA_CONFIG->CHANNELS[ch].SRC = transaction->config.SRC;
     DMA_CONFIG->CHANNELS[ch].DST = transaction->config.DST;
     DMA_CONFIG->CHANNELS[ch].LEN = transaction->config.LEN-1;
@@ -100,7 +101,7 @@ bool RAM_ATTR dma_transaction_ready(HAL_DMA_Transaction_t *transaction)
  * */
 HAL_Status_t RAM_ATTR dma_transaction_wait(HAL_DMA_Transaction_t *transaction, uint32_t timeout_us)
 {
-    uint32_t mask = (1 << transaction->channel) << DMA_STATUS_READY_S;
+    uint32_t mask = (1 << transaction->temp_channel) << DMA_STATUS_READY_S;
     uint32_t timestamp = HAL_Micros();
     HAL_Status_t ret = HAL_DMA_TIMEOUT;
     while (HAL_Micros() - timestamp < timeout_us)
@@ -114,7 +115,7 @@ HAL_Status_t RAM_ATTR dma_transaction_wait(HAL_DMA_Transaction_t *transaction, u
     // disable channel if the timeout
     if (ret != HAL_DMA_OK)
     {
-        DMA_CONFIG->CHANNELS[transaction->channel].CFG &= ~DMA_CH_CFG_ENABLE_M;
+        DMA_CONFIG->CHANNELS[transaction->temp_channel].CFG &= ~DMA_CH_CFG_ENABLE_M;
     }
     return ret;
 }

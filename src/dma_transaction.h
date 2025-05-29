@@ -93,6 +93,7 @@ typedef struct
 {
     DMA_CHANNEL_TypeDef config;
     uint8_t channel;
+    uint8_t temp_channel;
 } HAL_DMA_Transaction_t;
 
 
