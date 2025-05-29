@@ -27,7 +27,7 @@ typedef struct
 typedef struct
 {
     UART_TypeDef *host;
-    HAL_DMA_Transaction_t dma_transaction;
+    dma_transaction_t dma_transaction;
     usart_transaction_direction_t direction;
 } usart_transaction_t;
 
@@ -36,14 +36,14 @@ inline bool usart_transaction_ready(usart_transaction_t *trans)
     return dma_transaction_ready(&(trans->dma_transaction));
 }
 
-inline HAL_Status_t usart_transaction_wait(usart_transaction_t *trans, uint32_t timeout_us)
+inline dma_status_t usart_transaction_wait(usart_transaction_t *trans, uint32_t timeout_us)
 {
     return dma_transaction_wait(&(trans->dma_transaction), timeout_us);
 }
 
-HAL_Status_t usart_transaction_init(usart_transaction_t *trans, usart_transaction_cfg_t *cfg);
+dma_status_t usart_transaction_init(usart_transaction_t *trans, usart_transaction_cfg_t *cfg);
 void usart_transaction_start(usart_transaction_t *trans, char *src, uint32_t len);
-HAL_Status_t usart_transmit_start(usart_transaction_t *trans, const char *src, uint32_t len);
-HAL_Status_t usart_transmit(usart_transaction_t *trans, const char *src, uint32_t len, uint32_t timeout_us);
-HAL_Status_t usart_receive_start(usart_transaction_t *trans, char *dst, uint32_t len);
-HAL_Status_t usart_receive(usart_transaction_t *trans, char *dst, uint32_t len, uint32_t timeout_us);
+dma_status_t usart_transmit_start(usart_transaction_t *trans, const char *src, uint32_t len);
+dma_status_t usart_transmit(usart_transaction_t *trans, const char *src, uint32_t len, uint32_t timeout_us);
+dma_status_t usart_receive_start(usart_transaction_t *trans, char *dst, uint32_t len);
+dma_status_t usart_receive(usart_transaction_t *trans, char *dst, uint32_t len, uint32_t timeout_us);
