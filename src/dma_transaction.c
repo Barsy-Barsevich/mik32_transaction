@@ -121,6 +121,21 @@ dma_status_t RAM_ATTR dma_transaction_wait(dma_transaction_t *transaction, uint3
     return ret;
 }
 
+uint32_t dma_transaction_left_bytes(dma_transaction_t *trans)
+{
+    uint8_t temp_channel = trans->temp_channel;
+    uint32_t need = trans->config.LEN;
+    uint32_t done = DMA_CONFIG->CHANNELS[temp_channel].LEN + 1;
+    return need - done;
+}
+
+uint32_t dma_transaction_done_bytes(dma_transaction_t *trans)
+{
+    uint8_t temp_channel = trans->temp_channel;
+    uint32_t done = DMA_CONFIG->CHANNELS[temp_channel].LEN + 1;
+    return done;
+}
+
 void dma_status_decoder(dma_status_t errcode)
 {
     xprintf("DMA status: ");

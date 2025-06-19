@@ -124,6 +124,10 @@ bool dma_transaction_ready(dma_transaction_t *transaction);
  * @return HAL_OK или HAL_TIMEOUT
  * */
 dma_status_t dma_transaction_wait(dma_transaction_t *transaction, uint32_t timeout_us);
+
+uint32_t dma_transaction_left_bytes(dma_transaction_t *trans);
+uint32_t dma_transaction_done_bytes(dma_transaction_t *trans);
+
 /*!
  *
  */
