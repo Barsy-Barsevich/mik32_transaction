@@ -8,6 +8,9 @@
 
 #define DMA_CH_AUTO     DMA_CHANNEL_COUNT
 
+#define DMA_TIMEOUT_AUTO    0x00000000
+#define DMA_NO_TIMEOUT      0xFFFFFFFF
+
 typedef enum
 {
     DMA_STATUS_OK = 0,
