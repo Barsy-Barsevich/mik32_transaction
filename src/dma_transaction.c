@@ -104,7 +104,8 @@ dma_status_t RAM_ATTR dma_transaction_wait(dma_transaction_t *transaction, uint3
     uint32_t mask = (1 << transaction->temp_channel) << DMA_STATUS_READY_S;
     uint32_t timestamp = HAL_Micros();
     dma_status_t ret = DMA_STATUS_TIMEOUT;
-    while (HAL_Micros() - timestamp < timeout_us)
+    bool no_timeout = timeout_us == DMA_NO_TIMEOUT ? true : false;
+    while (HAL_Micros() - timestamp < timeout_us || no_timeout)
     {
         if ((DMA_CONFIG->CONFIG_STATUS & mask) != 0)
         {

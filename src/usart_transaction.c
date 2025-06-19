@@ -74,6 +74,26 @@ void RAM_ATTR usart_transaction_start(usart_transaction_t *trans, char *arr, uin
     dma_transaction_start(&(trans->dma_transaction));
 }
 
+dma_status_t usart_transaction_wait(usart_transaction_t *trans, uint32_t timeout_us)
+{
+    if (timeout_us == DMA_TIMEOUT_AUTO)
+    {
+        uint32_t len = trans->dma_transaction.config.LEN;
+        uint32_t clk_freq = HAL_PCC_GetSysClockFreq() / ((PM->DIV_AHB+1) * (PM->DIV_APB_P+1));
+        if (clk_freq >= 1000000)
+        {
+            uint32_t ticks_per_us = clk_freq / 1000000;
+            timeout_us = ((uint64_t)len * trans->host->DIVIDER + (ticks_per_us-1)) / ticks_per_us;
+        }
+        else
+        {
+            timeout_us = ((uint64_t)len * trans->host->DIVIDER * 1000000) / clk_freq;
+        }
+        timeout_us *= 10;
+    }
+    return dma_transaction_wait(&(trans->dma_transaction), timeout_us);
+}
+
 dma_status_t RAM_ATTR usart_transmit_start(usart_transaction_t *trans, const char *src, uint32_t len_bytes)
 {
     if (trans->direction != USART_TRANSACTION_TRANSMIT)
