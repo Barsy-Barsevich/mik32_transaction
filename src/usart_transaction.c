@@ -131,3 +131,13 @@ dma_status_t RAM_ATTR usart_receive(usart_transaction_t *trans, char *dst, uint3
         res = usart_transaction_wait(trans, timeout_us);
     return res;
 }
+
+uint32_t usart_transaction_left_bytes(usart_transaction_t *trans)
+{
+    return dma_transaction_left_bytes(&trans->dma_transaction);
+}
+
+uint32_t usart_transaction_done_bytes(usart_transaction_t *trans)
+{
+    return dma_transaction_done_bytes(&trans->dma_transaction);
+}

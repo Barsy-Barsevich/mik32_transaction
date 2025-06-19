@@ -43,3 +43,5 @@ dma_status_t usart_transmit_start(usart_transaction_t *trans, const char *src, u
 dma_status_t usart_transmit(usart_transaction_t *trans, const char *src, uint32_t len_bytes, uint32_t timeout_us);
 dma_status_t usart_receive_start(usart_transaction_t *trans, char *dst, uint32_t len_bytes);
 dma_status_t usart_receive(usart_transaction_t *trans, char *dst, uint32_t len_bytes, uint32_t timeout_us);
+uint32_t usart_transaction_left_bytes(usart_transaction_t *trans);
+uint32_t usart_transaction_done_bytes(usart_transaction_t *trans);
