@@ -86,7 +86,7 @@ dma_status_t RAM_ATTR dma_transaction_start(dma_transaction_t *transaction)
  */
 bool RAM_ATTR dma_transaction_ready(dma_transaction_t *transaction)
 {
-    uint32_t mask = (1 << transaction->channel) << DMA_STATUS_READY_S;
+    uint32_t mask = (1 << transaction->temp_channel) << DMA_STATUS_READY_S;
     bool ret = false;
     if ((DMA_CONFIG->CONFIG_STATUS & mask) != 0) ret = true;
     return ret;
@@ -125,14 +125,16 @@ uint32_t dma_transaction_left_bytes(dma_transaction_t *trans)
 {
     uint8_t temp_channel = trans->temp_channel;
     uint32_t need = trans->config.LEN;
-    uint32_t done = DMA_CONFIG->CHANNELS[temp_channel].LEN + 1;
+    uint32_t done = DMA_CONFIG->CHANNELS[temp_channel].LEN;
+    done += dma_transaction_ready(trans) ? 1 : 0;
     return need - done;
 }
 
 uint32_t dma_transaction_done_bytes(dma_transaction_t *trans)
 {
     uint8_t temp_channel = trans->temp_channel;
-    uint32_t done = DMA_CONFIG->CHANNELS[temp_channel].LEN + 1;
+    uint32_t done = DMA_CONFIG->CHANNELS[temp_channel].LEN;
+    done += dma_transaction_ready(trans) ? 1 : 0;
     return done;
 }
 

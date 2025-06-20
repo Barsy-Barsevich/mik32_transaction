@@ -74,6 +74,11 @@ void RAM_ATTR usart_transaction_start(usart_transaction_t *trans, char *arr, uin
     dma_transaction_start(&(trans->dma_transaction));
 }
 
+bool usart_transaction_ready(usart_transaction_t *trans)
+{
+    return dma_transaction_ready(&(trans->dma_transaction));
+}
+
 dma_status_t usart_transaction_wait(usart_transaction_t *trans, uint32_t timeout_us)
 {
     if (timeout_us == DMA_TIMEOUT_AUTO)
