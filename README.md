@@ -14,3 +14,9 @@ USART DMA library. Allows to run long USART transactions while the processor pro
 
 ### `i2c_transaction.h`
 I2C DMA library. As the others these libraries, optimized for speed, so produce I2C transactions faster than traditional pending method
+
+### `spi_transaction`
+SPI DMA library.
+
+### `dac_transaction
+DAC DMA library. Sends data from array to DAC output via DMA while processor works on other tasks.
