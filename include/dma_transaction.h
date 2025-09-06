@@ -4,7 +4,7 @@
 #include "dma_config.h"
 #include "mik32_memory_map.h"
 #include "mik32_hal.h"
-#include "xprintf.h"
+#include "dma_timer.h"
 
 #define DMA_CH_AUTO     DMA_CHANNEL_COUNT
 
@@ -29,13 +29,11 @@ typedef enum
     DMA_PRIORITY_3 = 3,
 } dma_priority_t;
 
-
 typedef enum
 {
     DMA_PERIPHERY_MODE = 0,
     DMA_MEMORY_MODE = 1
 } dma_address_mode_t;
-
 
 typedef enum
 {
@@ -46,7 +44,6 @@ typedef enum
     DMA_BLOCK_16BIT = 1,
     DMA_BLOCK_32BIT = 2
 } dma_block_size_t;
-
 
 typedef enum
 {
@@ -64,6 +61,13 @@ typedef enum
     DMA_DAC_1_REQUEST = 11,
     DMA_TIMER32_0_REQUEST = 12
 } dma_request_t;
+
+typedef enum
+{
+    DMA_SYNC_NATIVE = 0,
+    DMA_SYNC_TIMER,
+    DMA_SYNC_EXTERNAL,
+} dma_sync_t;
 
 
 //TODO: replace uint8_t
