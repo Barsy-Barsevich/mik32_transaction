@@ -1,6 +1,69 @@
 #include "spi_transaction.h"
 
 
+static int spi_init(SPI_TypeDef *host)
+{
+    if (host == SPI_0)
+    {
+        __HAL_PCC_SPI_0_CLK_ENABLE();
+        __HAL_PCC_GPIO_0_CLK_ENABLE();
+        uint8_t miso_pin = 0;
+        PAD_CONFIG->PORT_0_CFG &= ~(0b11 << (2 * miso_pin));
+        PAD_CONFIG->PORT_0_CFG |= (0b01 << (2 * miso_pin));
+        uint8_t mosi_pin = 1;
+        PAD_CONFIG->PORT_0_CFG &= ~(0b11 << (2 * mosi_pin));
+        PAD_CONFIG->PORT_0_CFG |= (0b01 << (2 * mosi_pin));
+        uint8_t sck_pin = 2;
+        PAD_CONFIG->PORT_0_CFG &= ~(0b11 << (2 * sck_pin));
+        PAD_CONFIG->PORT_0_CFG |= (0b01 << (2 * sck_pin));
+        uint8_t ssin_pin = 3;
+        PAD_CONFIG->PORT_0_CFG &= ~(0b11 << (2 * ssin_pin));
+        PAD_CONFIG->PORT_0_CFG |= (0b01 << (2 * ssin_pin));
+        PAD_CONFIG->PORT_0_PUPD &= ~(0b11 << (2 * ssin_pin));
+        PAD_CONFIG->PORT_0_PUPD |= (0b01 << (2 * ssin_pin));
+    }
+    else if (host == SPI_1)
+    {
+        __HAL_PCC_SPI_1_CLK_ENABLE();
+        __HAL_PCC_GPIO_1_CLK_ENABLE();
+        uint8_t miso_pin = 0;
+        PAD_CONFIG->PORT_1_CFG &= ~(0b11 << (2 * miso_pin));
+        PAD_CONFIG->PORT_1_CFG |= (0b01 << (2 * miso_pin));
+        uint8_t mosi_pin = 1;
+        PAD_CONFIG->PORT_1_CFG &= ~(0b11 << (2 * mosi_pin));
+        PAD_CONFIG->PORT_1_CFG |= (0b01 << (2 * mosi_pin));
+        uint8_t sck_pin = 2;
+        PAD_CONFIG->PORT_1_CFG &= ~(0b11 << (2 * sck_pin));
+        PAD_CONFIG->PORT_1_CFG |= (0b01 << (2 * sck_pin));
+        uint8_t ssin_pin = 3;
+        PAD_CONFIG->PORT_1_CFG &= ~(0b11 << (2 * ssin_pin));
+        PAD_CONFIG->PORT_1_CFG |= (0b01 << (2 * ssin_pin));
+        PAD_CONFIG->PORT_1_PUPD &= ~(0b11 << (2 * ssin_pin));
+        PAD_CONFIG->PORT_1_PUPD |= (0b01 << (2 * ssin_pin));
+    }
+    else return 1;
+
+    host->ENABLE &= ~SPI_ENABLE_M;
+    host->ENABLE |= SPI_ENABLE_CLEAR_RX_FIFO_M;
+    host->ENABLE |= SPI_ENABLE_CLEAR_TX_FIFO_M;
+    volatile uint32_t unused = host->INT_STATUS;
+    (void)unused;
+    uint32_t cfg = SPI_CONFIG_MASTER_M | host->CONFIG;
+    // cfg |= 0b111<<SPI_CONFIG_BAUD_RATE_DIV_S;
+    cfg |= SPI_CONFIG_MANUAL_CS_M;
+    cfg |= 1<<SPI_CONFIG_CLK_PH_S;
+    cfg |= 1<<SPI_CONFIG_CLK_POL_S;
+    cfg |= 0b1111<<SPI_CONFIG_CS_S;
+    host->CONFIG = cfg;
+    uint32_t delay = 0;
+    delay |= 0x01 << SPI_DELAY_BTWN_S;
+    delay |= 0x00 << SPI_DELAY_AFTER_S;
+    delay |= 0x00 << SPI_DELAY_INIT_S;
+    host->DELAY = delay;
+    host->TX_THR = 1;
+    return 0;
+}
+
 dma_status_t spi_transaction_init(spi_transaction_t *trans, spi_transaction_cfg_t *cfg)
 {
     dma_status_t res;
@@ -9,6 +72,12 @@ dma_status_t spi_transaction_init(spi_transaction_t *trans, spi_transaction_cfg_
     trans->token = cfg->token;
     trans->pre_cb = cfg->pre_cb;
     trans->post_cb = cfg->post_cb;
+
+    int spi_init_res = spi_init(cfg->host);
+    if (spi_init_res != 0)
+    {
+        return DMA_STATUS_INCORRECT_ARGUMENT;
+    }
 
     dma_transaction_cfg_t dma_cfg = {0};
     dma_cfg.priority = cfg->dma_priority;
