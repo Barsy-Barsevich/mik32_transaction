@@ -22,7 +22,10 @@ typedef struct
     void (*pre_cb)(uint32_t);
     void (*post_cb)(uint32_t);
     uint32_t len;
-    uint32_t rate;
+    uint32_t dac_rate;
+    dma_sync_t sync;
+    dma_timer_sync_cfg_t *timer_sync_cfg;
+
 } dac_transaction_cfg_t;
 
 typedef struct
