@@ -1,22 +1,29 @@
-# MIK32 DMA libraries
+# DMA-библиотеки для MIK32
+*для работы с DMA*
 
-## Abstract
-Created to simplify DMA usage on the MIK32 platform. Provide easier initialization and faster transaction run.
+\[RU/[EN](./README_EN.md)]
 
-Before you transmit or receive some data using these libraries, you should to create __transaction__ and initialize it. Transaction initializing takes all the long-time setting operations linking user-friendly interface and optimized internal design. When you run the transaction, it does not spend time for setup, it is produced quickly
+---
 
-## Headers
+## Введение и философия
+Созданы для упрощения взаимодействия программиста бизнес-логики с модулем DMA микроконтроллера. Предоставляют возможность удобной инициализации DMA и быстрого обмена посредством DMA.
+
+Данный проект предлагает ввеси новую сущность -- транзакцию (transaction). Транзакция -- это акт обмена данными с использованием DMA. Перед началом работы, необходимо создать структуру-дескриптор транзакции и инициализировать ее. Идея в том, чтобы вынести все долгие операции по настройке DMA в отдельную функцию инициализации транзакции, а для совершения самой транзакции использовать другие, оптимизированные по времени выполнения функции.
+
+Приминение DMA-библиотек позволяет распараллелить процессы внутри микроконтроллера: пока DMA работает с периферийными интерфейсами, процессор может, не тратя своего времени впустую, считать что-то полезное.
+
+## Заголовочные файлы
 ### `dma_transaction.h`
-Common DMA-library, provides DMA initialization, DMA-transaction startup and progress control
+Общий заголовок для DMA-библиотеки, содержит декларации инициализации самого домена DMA, запуска, ожидания, контроля выполнения DMA-транзакций.
 
 ### `usart_transaction.h`
-USART DMA library. Allows to run long USART transactions while the processor process the other tasks
+Библиотека USART с использованием DMA. Поддерживает транзакции на ввод и вывод данных. Удобна, если необходимо ожидать приема чего-то по UART; пока нужное количество байт не будет принято, транзакция не будет считаться завершенной. Библиотека удобна, когда нужно принимать асинхронные данные USART, не используя прерывания, а также если нужно что-то передавать, не тормозя процессор.
 
 ### `i2c_transaction.h`
-I2C DMA library. As the others these libraries, optimized for speed, so produce I2C transactions faster than traditional pending method
+Библиотека I2C с использованием DMA. Поддерживаются транзакции на ввод и вывод.
 
 ### `spi_transaction.h`
-SPI DMA library.
+Библиотека SPI с использованием DMA. Поддерживаются транзакции на вывод, при транзакциях на ввод возможна аппаратная ошибка МК, не рекомендуется использование транзакции на ввод, см. реализацию https://github.com/Barsy-Barsevich/mik32sd.
 
 ### `dac_transaction.h`
-DAC DMA library. Sends data from array to DAC output via DMA while processor works on other tasks.
+Библиотека ЦАП с использованием DMA. Поддерживает транзакции только на вывод: позволяет формировать аналоговую последовательность на выводе ЦАП с заданным шагом.
