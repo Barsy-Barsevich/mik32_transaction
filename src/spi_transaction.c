@@ -134,7 +134,6 @@ dma_status_t spi_transaction_init(spi_transaction_t *trans, spi_transaction_cfg_
 
 dma_status_t RAM_ATTR spi_transmit_start(spi_transaction_t *trans, const char *src, uint32_t len_bytes)
 {
-    printf("len: %u\n", (unsigned)len_bytes);
     if (trans->direction != SPI_TRANSACTION_TRANSMIT)
         return DMA_STATUS_INCORRECT_ARGUMENT;
     if (trans->pre_cb != NULL)
