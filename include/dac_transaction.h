@@ -1,5 +1,9 @@
 #pragma once
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -42,3 +46,7 @@ dma_status_t dac_transaction_init(dac_transaction_t *trans, dac_transaction_cfg_
 dma_status_t dac_transaction_start(dac_transaction_t *trans);
 bool dac_transaction_ready(dac_transaction_t *trans);
 dma_status_t dac_transaction_wait(dac_transaction_t *trans, uint32_t timeout_us);
+
+#if defined(__cplusplus)
+}
+#endif

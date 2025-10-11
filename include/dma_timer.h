@@ -1,5 +1,9 @@
 #pragma once
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 #include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -15,3 +19,7 @@ typedef struct
 } dma_timer_sync_cfg_t;
 
 bool dma_sync_timer_init(dma_timer_sync_cfg_t *cfg, bool external_clock);
+
+#if defined(__cplusplus)
+}
+#endif

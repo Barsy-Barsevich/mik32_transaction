@@ -1,5 +1,9 @@
 #pragma once
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include <stdbool.h>
 #include "mik32_memory_map.h"
@@ -42,3 +46,7 @@ dma_status_t usart_receive_start(usart_transaction_t *trans, char *dst, uint32_t
 dma_status_t usart_receive(usart_transaction_t *trans, char *dst, uint32_t len_bytes, uint32_t timeout_us);
 uint32_t usart_transaction_left_bytes(usart_transaction_t *trans);
 uint32_t usart_transaction_done_bytes(usart_transaction_t *trans);
+
+#if defined(__cplusplus)
+}
+#endif

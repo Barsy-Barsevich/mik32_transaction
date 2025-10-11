@@ -1,5 +1,9 @@
 #pragma once
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 #include "stdio.h"
 #include "stdbool.h"
 #include "mik32_hal_i2c.h"
@@ -53,3 +57,7 @@ dma_status_t i2c_receive(i2c_transaction_t *trans, char *dst, uint8_t len_bytes,
 dma_status_t i2c_repeat_transaction_start(i2c_transaction_t *trans);
 dma_status_t i2c_repeat_transaction(i2c_transaction_t *trans, uint32_t timeout_us);
 void i2c_transaction_err_decode(i2c_transaction_t *trans);
+
+#if defined(__cplusplus)
+}
+#endif

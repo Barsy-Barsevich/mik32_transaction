@@ -1,5 +1,9 @@
 #pragma once
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 #include <stdio.h>
 #include "dma_transaction.h"
 #include "mik32_hal_spi.h"
@@ -39,3 +43,7 @@ dma_status_t spi_transaction_end(spi_transaction_t *trans, uint32_t timeout_us);
 dma_status_t spi_transmit(spi_transaction_t *trans, const char *src, uint32_t len_bytes, uint32_t timeout_us);
 dma_status_t spi_receive_start(spi_transaction_t *trans, char *dst, uint32_t len_bytes);
 dma_status_t spi_receive(spi_transaction_t *trans, char *dst, uint32_t len_bytes, uint32_t timeout_us);
+
+#if defined(__cplusplus)
+}
+#endif

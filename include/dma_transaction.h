@@ -1,5 +1,9 @@
 #pragma once
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 #include <stdbool.h>
 #include "dma_config.h"
 #include "mik32_memory_map.h"
@@ -136,3 +140,7 @@ uint32_t dma_transaction_done_bytes(dma_transaction_t *trans);
  *
  */
 void dma_status_decoder(dma_status_t errcode);
+
+#if defined(__cplusplus)
+}
+#endif
